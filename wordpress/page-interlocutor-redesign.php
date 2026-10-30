@@ -1,0 +1,718 @@
+<?php
+/*
+Template Name: Interlocutor — Redesign
+*/
+?>
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Interlocutor — een serie sculpturen door Imperionism. Aanwezig zonder te vragen; onthullend wat alleen tijd kan onthullen." />
+    <title>Imperionism — Interlocutor</title>
+    <style>
+      :root {
+        --bg: #f4f1ea;
+        --bg-2: #ece8de;
+        --ink: #221e18;
+        --ink-soft: rgba(34, 30, 24, 0.62);
+        --line: rgba(34, 30, 24, 0.16);
+        --stone-1: #ddd6c7;
+        --stone-2: #bcb3a0;
+        --stone-3: #8e8572;
+        --glow-bg: rgba(226, 208, 168, 0.35);
+        --shadow: rgba(20, 16, 10, 0.14);
+        --glowA: 0.55;
+        --serif: "Palatino Linotype", Palatino, "Palatino Nova", "Iowan Old Style", "Book Antiqua", Georgia, "Times New Roman", serif;
+        --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      html { scroll-behavior: smooth; }
+
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--serif);
+        line-height: 1.7;
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
+      }
+
+      ::selection { background: #d8c9a3; color: #221e18; }
+
+      [data-en] { display: none; }
+      body.lang-en [data-en] { display: revert; }
+      body.lang-en [data-nl] { display: none; }
+
+      a { color: inherit; text-decoration: none; }
+
+      /* ---------- header ---------- */
+
+      .site-head {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.4rem 3vw;
+        background: transparent;
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        border-bottom: 1px solid transparent;
+        transition: border-color 0.8s, background 0.8s;
+        z-index: 10;
+      }
+      .site-head.scrolled {
+        border-bottom-color: var(--line);
+        background: color-mix(in srgb, var(--bg) 82%, transparent);
+      }
+      .wordmark {
+        font-family: var(--sans);
+        font-size: 0.68rem;
+        letter-spacing: 0.42em;
+        text-transform: uppercase;
+        color: var(--ink);
+      }
+      .site-nav { display: flex; gap: 2.2rem; }
+      .site-nav a {
+        font-family: var(--sans);
+        font-size: 0.66rem;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+        transition: color 0.5s;
+      }
+      .site-nav a:hover { color: var(--ink); }
+      .langs {
+        font-family: var(--sans);
+        font-size: 0.66rem;
+        letter-spacing: 0.22em;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .langs button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font: inherit;
+        color: var(--ink-soft);
+        padding: 0.1rem 0.1rem;
+        border-bottom: 1px solid transparent;
+        transition: color 0.5s, border-color 0.5s;
+      }
+      .langs button[aria-pressed="true"] {
+        color: var(--ink);
+        border-bottom-color: var(--ink);
+      }
+      .langs .sep { color: var(--line); }
+
+      @media (max-width: 640px) { .site-nav { display: none; } }
+
+      /* ---------- hero ---------- */
+
+      .hero {
+        min-height: 100svh;
+        display: grid;
+        grid-template-rows: 1fr auto;
+        position: relative;
+        padding: 0 6vw;
+      }
+      .hero-inner {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        align-items: center;
+        gap: 4vw;
+        min-height: 0;
+      }
+      .eyebrow {
+        font-family: var(--sans);
+        font-size: 0.64rem;
+        letter-spacing: 0.42em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+        opacity: 0;
+        animation: rise 1.4s ease 0.3s forwards;
+      }
+      .eyebrow .dot { margin: 0 0.5em; color: var(--line); }
+
+      h1 {
+        font-family: var(--serif);
+        font-weight: 400;
+        font-size: clamp(3.1rem, 9.5vw, 7.4rem);
+        line-height: 1.04;
+        letter-spacing: 0.015em;
+        margin: 1.2rem 0 1.6rem;
+      }
+      h1 span {
+        display: inline-block;
+        opacity: 0;
+        transform: translateY(0.35em);
+        transition: opacity 1.3s ease, transform 1.3s ease;
+      }
+      h1.ready span { opacity: 1; transform: none; }
+
+      .tagline {
+        font-size: clamp(1.02rem, 1.6vw, 1.22rem);
+        font-style: italic;
+        color: var(--ink-soft);
+        max-width: 26em;
+        opacity: 0;
+        animation: rise 1.4s ease 0.9s forwards;
+      }
+
+      @keyframes rise {
+        from { opacity: 0; transform: translateY(14px); }
+        to { opacity: 1; transform: none; }
+      }
+
+      .hero-art {
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        position: relative;
+        opacity: 0;
+        animation: rise 1.8s ease 0.5s forwards;
+      }
+      .halo {
+        position: absolute;
+        inset: -8% -14%;
+        background: radial-gradient(closest-side, var(--glow-bg), transparent 72%);
+        animation: breathe 18s ease-in-out infinite alternate;
+        will-change: transform;
+      }
+      @keyframes breathe {
+        from { transform: scale(1); }
+        to { transform: scale(1.05); }
+      }
+      .hero-frame {
+        position: relative;
+        width: min(44vw, 420px);
+        max-width: 78vw;
+        will-change: transform;
+      }
+      .hero-frame img {
+        display: block;
+        width: 100%;
+        height: auto;
+        filter: drop-shadow(0 22px 28px var(--shadow));
+      }
+      .sheen {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: radial-gradient(60% 80% at 28% 30%, rgba(255, 244, 220, 0.5), transparent 72%);
+        mix-blend-mode: soft-light;
+        opacity: var(--glowA);
+        animation: driftLight 56s ease-in-out infinite alternate;
+        will-change: transform;
+      }
+      @keyframes driftLight {
+        from { transform: translateX(-34px); }
+        to { transform: translateX(52px); }
+      }
+
+      .scroll-hint {
+        grid-row: 2;
+        justify-self: center;
+        padding-bottom: 1.6rem;
+        font-family: var(--sans);
+        font-size: 0.6rem;
+        letter-spacing: 0.4em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.7rem;
+      }
+      .scroll-hint .line {
+        width: 1px;
+        height: 44px;
+        background: var(--ink-soft);
+        transform-origin: top;
+        animation: grow 3.2s ease-in-out infinite;
+      }
+      @keyframes grow {
+        0% { transform: scaleY(0); opacity: 0; }
+        40% { transform: scaleY(1); opacity: 0.9; }
+        100% { transform: scaleY(1) translateY(10px); opacity: 0; }
+      }
+
+      @media (max-width: 860px) {
+        .hero-inner { grid-template-columns: 1fr; align-content: center; gap: 2rem; }
+        .hero-art { order: 2; justify-self: center; }
+        h1 { margin: 1rem 0 1.2rem; }
+      }
+
+      /* ---------- shared section bits ---------- */
+
+      section { padding: 16vh 6vw; }
+      .label {
+        font-family: var(--sans);
+        font-size: 0.64rem;
+        letter-spacing: 0.42em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+        margin-bottom: 3rem;
+      }
+      .label .dot { margin: 0 0.5em; color: var(--line); }
+
+      .reveal { opacity: 0; transform: translateY(26px); transition: opacity 1.5s ease, transform 1.5s ease; }
+      .reveal.visible { opacity: 1; transform: none; }
+
+      /* ---------- statement ---------- */
+
+      .statement { padding-top: 20vh; }
+      .prose { max-width: 640px; margin-left: 0; }
+      @media (min-width: 1000px) { .prose { margin-left: 8vw; } }
+      .prose p {
+        font-size: clamp(1.12rem, 1.8vw, 1.32rem);
+        margin-bottom: 1.6em;
+      }
+      .prose em { font-style: italic; }
+      blockquote {
+        margin-top: 5rem;
+        max-width: 640px;
+      }
+      @media (min-width: 1000px) { blockquote { margin-left: 14vw; } }
+      blockquote p {
+        font-size: clamp(1.5rem, 3vw, 2.1rem);
+        font-style: italic;
+        line-height: 1.4;
+        padding: 2.2rem 0;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+
+      /* ---------- series ---------- */
+
+      .series-note {
+        font-size: clamp(1.02rem, 1.5vw, 1.15rem);
+        font-style: italic;
+        color: var(--ink-soft);
+        max-width: 30em;
+        margin-bottom: 4.5rem;
+      }
+      .gallery {
+        columns: 2 340px;
+        column-gap: 5vw;
+      }
+      .plate {
+        break-inside: avoid;
+        margin: 0 0 5vw;
+        cursor: zoom-in;
+      }
+      .plate img {
+        width: 100%;
+        height: auto;
+        display: block;
+        box-shadow: 0 14px 24px var(--shadow);
+        transition: filter 1s ease;
+      }
+      .plate:hover img { filter: brightness(1.04); }
+
+      /* ---------- lightbox ---------- */
+
+      .lightbox {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4vh 4vw;
+        background: color-mix(in srgb, var(--bg) 92%, transparent);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.6s ease;
+        cursor: zoom-out;
+      }
+      .lightbox.open { opacity: 1; pointer-events: auto; }
+      .lightbox img {
+        max-width: min(90vw, 900px);
+        max-height: 86vh;
+        width: auto;
+        height: auto;
+        box-shadow: 0 30px 60px var(--shadow);
+      }
+
+      /* ---------- light ---------- */
+
+      .light { text-align: left; }
+      .light-copy {
+        font-size: clamp(1.12rem, 1.8vw, 1.32rem);
+        max-width: 34em;
+        margin-bottom: 4.5rem;
+      }
+      .day-slider {
+        max-width: 560px;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 1.4rem;
+      }
+      .day-slider .end {
+        font-family: var(--sans);
+        font-size: 0.62rem;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+      }
+      input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 2px;
+        background: var(--line);
+        outline: none;
+        cursor: ew-resize;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--bg);
+        border: 1px solid var(--ink);
+        box-shadow: 0 0 0 5px color-mix(in srgb, var(--bg) 70%, transparent);
+        transition: transform 0.4s;
+      }
+      input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.25); }
+      input[type="range"]::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--bg);
+        border: 1px solid var(--ink);
+      }
+
+      /* ---------- footer ---------- */
+
+      footer {
+        border-top: 1px solid var(--line);
+        padding: 2.6rem 6vw;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+      }
+      footer .wordmark { letter-spacing: 0.42em; }
+      footer .foot-line {
+        font-family: var(--sans);
+        font-size: 0.62rem;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+      }
+      footer .copy {
+        font-family: var(--sans);
+        font-size: 0.62rem;
+        letter-spacing: 0.22em;
+        color: var(--ink-soft);
+      }
+      footer .foot-nav {
+        width: 100%;
+        display: flex;
+        gap: 2.4rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1.8rem;
+        border-bottom: 1px solid var(--line);
+      }
+      footer .foot-nav a {
+        font-family: var(--sans);
+        font-size: 0.62rem;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+        transition: color 0.5s;
+      }
+      footer .foot-nav a:hover { color: var(--ink); }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.001s !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.001s !important;
+        }
+        html { scroll-behavior: auto; }
+        .reveal { opacity: 1; transform: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-head" id="siteHead">
+      <a class="wordmark" href="#top">Imperionism</a>
+      <nav class="site-nav" aria-label="main">
+        <a href="#series"><span data-nl>De serie</span><span data-en>The series</span></a>
+        <a href="#light"><span data-nl>Het licht</span><span data-en>The light</span></a>
+        <a href="https://imperionism.com/shop/">Shop</a>
+        <a href="#contact"><span data-nl>Contact</span><span data-en>Contact</span></a>
+      </nav>
+      <div class="langs" role="group" aria-label="language / taal">
+        <button id="btn-nl" type="button" aria-pressed="true">NL</button>
+        <span class="sep">·</span>
+        <button id="btn-en" type="button" aria-pressed="false">EN</button>
+      </div>
+    </header>
+
+    <main>
+      <!-- hero -->
+      <section class="hero" id="top">
+        <div class="hero-inner">
+          <div class="hero-text">
+            <p class="eyebrow">Imperionism<span class="dot">·</span><span data-nl>Sculptuur</span><span data-en>Sculpture</span></p>
+            <h1 id="title" aria-label="Interlocutor"><span>I</span><span>n</span><span>t</span><span>e</span><span>r</span><span>l</span><span>o</span><span>c</span><span>u</span><span>t</span><span>o</span><span>r</span></h1>
+            <p class="tagline"><span data-nl>Een serie sculpturen voor het ritme van de gewone dag.</span><span data-en>A series of sculptures for the rhythm of an ordinary day.</span></p>
+          </div>
+          <figure class="hero-art">
+            <div class="halo" aria-hidden="true"></div>
+            <div class="hero-frame" id="heroArt">
+              <img src="https://imperionism.com/wp-content/uploads/2026/04/D61_4527-scaled-e1777362606309-1024x1011.jpg" alt="Interlocutor — sculptuur / sculpture" width="1024" height="1011" />
+              <div class="sheen" aria-hidden="true"></div>
+            </div>
+          </figure>
+        </div>
+        <div class="scroll-hint" aria-hidden="true">
+          <span data-nl>rol</span><span data-en>scroll</span>
+          <i class="line"></i>
+        </div>
+      </section>
+
+      <!-- statement -->
+      <section class="statement reveal" id="statement">
+        <p class="label">01<span class="dot">·</span><span data-nl>Het gesprek</span><span data-en>The conversation</span></p>
+        <div class="prose">
+          <p data-nl>Elke kamer is vol stemmen — zelden antwoordt er één. Waar decoratie ophoudt, begint de <em>Interlocutor</em>-serie: bij de stille wisselwerking tussen een werk en de mens die ermee samenleeft.</p>
+          <p data-en>Every room is full of voices — rarely does one answer. Where décor ends, the <em>Interlocutor</em> series begins: with the quiet exchange between a work and the person who lives alongside it.</p>
+          <p data-nl>Het zijn sculpturen voor het tempo van een gewone dag. Aanwezig zonder te vragen; onthullend wat alleen tijd kan onthullen. Elk werk houdt het licht vast zoals steen dat doet — anders op het middaguur dan in de schemer — en geeft een stemming terug die je niet zelf meenam.</p>
+          <p data-en>These are sculptures made for the tempo of an ordinary day. Present without asking; revealing, in their own time, what only time can reveal. Each piece holds light the way stone does — differently at noon than at dusk — and returns a mood you did not bring with you.</p>
+        </div>
+        <blockquote>
+          <p data-nl>Ze eisen geen aandacht op. Ze geven er antwoord op.</p>
+          <p data-en>They do not demand attention. They answer it.</p>
+        </blockquote>
+      </section>
+
+      <!-- series -->
+      <section class="series reveal" id="series">
+        <p class="label">02<span class="dot">·</span><span data-nl>De serie</span><span data-en>The series</span></p>
+        <p class="series-note">
+          <span data-nl>Veertien werken, gefotografeerd zoals ze in huis staan. Klik een beeld om het van dichterbij te zien.</span>
+          <span data-en>Fourteen works, photographed as they stand in the home. Click any image to see it closer.</span>
+        </p>
+        <div class="gallery">
+          <figure class="plate reveal"><img src="https://imperionism.com/wp-content/uploads/2026/04/D61_4602-scaled-e1777365593762-1024x976.jpg" alt="Interlocutor — sculptuur / sculpture" loading="lazy" /></figure>
+          <figure class="plate reveal"><img src="https://imperionism.com/wp-content/uploads/2026/04/D61_4592-edited-scaled.jpg" alt="Interlocutor — sculptuur / sculpture" loading="lazy" /></figure>
+          <figure class="plate reveal"><img src="https://imperionism.com/wp-content/uploads/2026/04/D61_4571-780x1024.jpg" alt="Interlocutor — sculptuur / sculpture" loading="lazy" /></figure>
+          <figure class="plate reveal"><img src="https://imperionism.com/wp-content/uploads/2026/04/D61_4601-643x1024.jpg" alt="Interlocutor — sculptuur / sculpture" loading="lazy" /></figure>
+          <figure class="plate reveal"><img src="https://imperionism.com/wp-content/uploads/2026/04/D61_4564-781x1024.jpg" alt="Interlocutor — sculptuur / sculpture" loading="lazy" /></figure>
+          <figure class="plate reveal"><img src="https://imperionism.com/wp-content/uploads/2026/04/D61_4526-542x1024.jpg" alt="Interlocutor — sculptuur / sculpture" loading="lazy" /></figure>
+          <figure class="plate reveal"><img src="https://imperionism.com/wp-content/uploads/2026/04/D61_4483-548x1024.jpg" alt="Interlocutor — sculptuur / sculpture" loading="lazy" /></figure>
+          <figure class="plate reveal"><img src="https://imperionism.com/wp-content/uploads/2026/04/D61_4532-693x1024.jpg" alt="Interlocutor — sculptuur / sculpture" loading="lazy" /></figure>
+          <figure class="plate reveal"><img src="https://imperionism.com/wp-content/uploads/2026/04/D61_4538-509x1024.jpg" alt="Interlocutor — sculptuur / sculpture" loading="lazy" /></figure>
+          <figure class="plate reveal"><img src="https://imperionism.com/wp-content/uploads/2026/04/D61_4494-579x1024.jpg" alt="Interlocutor — sculptuur / sculpture" loading="lazy" /></figure>
+          <figure class="plate reveal"><img src="https://imperionism.com/wp-content/uploads/2026/04/D61_4609-781x1024.jpg" alt="Interlocutor — sculptuur / sculpture" loading="lazy" /></figure>
+          <figure class="plate reveal"><img src="https://imperionism.com/wp-content/uploads/2026/04/D61_4614-818x1024.jpg" alt="Interlocutor — sculptuur / sculpture" loading="lazy" /></figure>
+          <figure class="plate reveal"><img src="https://imperionism.com/wp-content/uploads/2026/04/D61_4505-550x1024.jpg" alt="Interlocutor — sculptuur / sculpture" loading="lazy" /></figure>
+          <figure class="plate reveal"><img src="https://imperionism.com/wp-content/uploads/2026/04/D61_4517-580x1024.jpg" alt="Interlocutor — sculptuur / sculpture" loading="lazy" /></figure>
+        </div>
+      </section>
+
+      <!-- light -->
+      <section class="light reveal" id="light">
+        <p class="label">03<span class="dot">·</span><span data-nl>Het licht</span><span data-en>The light</span></p>
+        <p class="light-copy">
+          <span data-nl>Elk werk houdt het licht anders vast — anders op het middaguur dan in de schemer. Beweeg de dag langs de lijn; de stemming beweegt mee.</span>
+          <span data-en>Each work holds the light differently — differently at noon than at dusk. Move the day along the line; the mood moves with it.</span>
+        </p>
+        <div class="day-slider">
+          <span class="end"><span data-nl>middag</span><span data-en>noon</span></span>
+          <input type="range" id="daylight" min="0" max="100" value="0" step="1" aria-label="stand van de dag / time of day" />
+          <span class="end"><span data-nl>schemer</span><span data-en>dusk</span></span>
+        </div>
+      </section>
+    </main>
+
+    <footer id="contact">
+      <nav class="foot-nav" aria-label="site">
+        <a href="https://imperionism.com/shop/">Shop</a>
+        <a href="https://imperionism.com/commissions/"><span data-nl>Opdrachten</span><span data-en>Commissions</span></a>
+        <a href="https://imperionism.com/public-placement-publieke-plaatsing/"><span data-nl>Publieke plaatsing</span><span data-en>Public placement</span></a>
+        <a href="https://www.instagram.com/imperionism/">Instagram</a>
+      </nav>
+      <span class="wordmark">Imperionism</span>
+      <span class="foot-line"><span data-nl>De Interlocutor-serie</span><span data-en>The Interlocutor series</span></span>
+      <span class="copy">© 2026</span>
+    </footer>
+
+    <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Vergroot werk / enlarged work">
+      <img id="lightboxImg" alt="" />
+    </div>
+
+    <script>
+      (function () {
+        var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        /* title letters in */
+        var title = document.getElementById("title");
+        var spans = title.querySelectorAll("span");
+        spans.forEach(function (s, i) {
+          s.style.transitionDelay = (0.35 + i * 0.07) + "s";
+        });
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { title.classList.add("ready"); });
+        });
+
+        /* language toggle */
+        var btnNl = document.getElementById("btn-nl");
+        var btnEn = document.getElementById("btn-en");
+        function setLang(lang) {
+          document.body.classList.toggle("lang-en", lang === "en");
+          document.documentElement.lang = lang;
+          btnNl.setAttribute("aria-pressed", lang === "nl");
+          btnEn.setAttribute("aria-pressed", lang === "en");
+        }
+        btnNl.addEventListener("click", function () { setLang("nl"); });
+        btnEn.addEventListener("click", function () { setLang("en"); });
+
+        /* header hairline on scroll */
+        var head = document.getElementById("siteHead");
+        window.addEventListener("scroll", function () {
+          head.classList.toggle("scrolled", window.scrollY > 40);
+        }, { passive: true });
+
+        /* reveals */
+        var reveals = document.querySelectorAll(".reveal");
+        if (reduced || !("IntersectionObserver" in window)) {
+          reveals.forEach(function (el) { el.classList.add("visible"); });
+        } else {
+          var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) {
+              if (e.isIntersecting) {
+                e.target.classList.add("visible");
+                io.unobserve(e.target);
+              }
+            });
+          }, { threshold: 0.15 });
+          reveals.forEach(function (el) { io.observe(el); });
+        }
+
+        /* noon–dusk palette interpolation */
+        function hex(c) {
+          var n = parseInt(c.slice(1), 16);
+          return [n >> 16 & 255, n >> 8 & 255, n & 255, 1];
+        }
+        function rgba(c) {
+          var m = c.match(/[\d.]+/g);
+          return [+m[0], +m[1], +m[2], +m[3]];
+        }
+        function parse(c) { return c[0] === "#" ? hex(c) : rgba(c); }
+        function mix(a, b, t) {
+          return [
+            a[0] + (b[0] - a[0]) * t,
+            a[1] + (b[1] - a[1]) * t,
+            a[2] + (b[2] - a[2]) * t,
+            a[3] + (b[3] - a[3]) * t
+          ];
+        }
+        function css(c, isAlpha) {
+          var r = Math.round(c[0]), g = Math.round(c[1]), bl = Math.round(c[2]);
+          return isAlpha
+            ? "rgba(" + r + "," + g + "," + bl + "," + (+c[3].toFixed(3)) + ")"
+            : "rgb(" + r + "," + g + "," + bl + ")";
+        }
+        var PAL = [
+          ["--bg", "#f4f1ea", "#1f1c18", false],
+          ["--bg-2", "#ece8de", "#171512", false],
+          ["--ink", "#221e18", "#eae4d6", false],
+          ["--ink-soft", "rgba(34,30,24,0.62)", "rgba(234,228,214,0.60)", true],
+          ["--line", "rgba(34,30,24,0.16)", "rgba(234,228,214,0.16)", true],
+          ["--stone-1", "#ddd6c7", "#5c5546", false],
+          ["--stone-2", "#bcb3a0", "#463f33", false],
+          ["--stone-3", "#8e8572", "#2f2a22", false],
+          ["--glow-bg", "rgba(226,208,168,0.35)", "rgba(196,150,96,0.12)", true],
+          ["--shadow", "rgba(20,16,10,0.14)", "rgba(0,0,0,0.45)", true]
+        ].map(function (p) {
+          return { name: p[0], a: parse(p[1]), b: parse(p[2]), alpha: p[3] };
+        });
+
+        var root = document.documentElement;
+        var slider = document.getElementById("daylight");
+        var lightTarget = 0, lightNow = 0;
+        slider.addEventListener("input", function () {
+          lightTarget = slider.value / 100;
+        });
+
+        /* pointer parallax on hero art */
+        var art = document.getElementById("heroArt");
+        var hero = document.getElementById("top");
+        var px = 0, py = 0, pxT = 0, pyT = 0;
+        if (!reduced && window.matchMedia("(pointer:fine)").matches) {
+          hero.addEventListener("mousemove", function (e) {
+            var r = hero.getBoundingClientRect();
+            pxT = ((e.clientX - r.left) / r.width - 0.5) * 12;
+            pyT = ((e.clientY - r.top) / r.height - 0.5) * 8;
+          });
+          hero.addEventListener("mouseleave", function () { pxT = 0; pyT = 0; });
+        }
+
+        /* lightbox */
+        var lb = document.getElementById("lightbox");
+        var lbImg = document.getElementById("lightboxImg");
+        var lbOpen = false;
+        function openLb(src, alt) {
+          lbImg.src = src;
+          lbImg.alt = alt || "";
+          lb.classList.add("open");
+          document.body.style.overflow = "hidden";
+          lbOpen = true;
+        }
+        function closeLb() {
+          lb.classList.remove("open");
+          document.body.style.overflow = "";
+          lbOpen = false;
+        }
+        document.addEventListener("click", function (e) {
+          var t = e.target;
+          if (!t.closest) return;
+          var plate = t.closest(".plate");
+          if (plate) {
+            var img = plate.querySelector("img");
+            openLb(img.getAttribute("src"), img.getAttribute("alt"));
+            return;
+          }
+          if (lbOpen && t.closest(".lightbox")) closeLb();
+        });
+        document.addEventListener("keydown", function (e) {
+          if (e.key === "Escape" && lbOpen) closeLb();
+        });
+
+        function frame() {
+          lightNow += (lightTarget - lightNow) * 0.06;
+          if (Math.abs(lightTarget - lightNow) > 0.0004) {
+            PAL.forEach(function (p) {
+              root.style.setProperty(p.name, css(mix(p.a, p.b, lightNow), p.alpha));
+            });
+            root.style.setProperty("--glowA", (0.55 + (0.3 - 0.55) * lightNow).toFixed(3));
+          }
+          if (!reduced) {
+            px += (pxT - px) * 0.05;
+            py += (pyT - py) * 0.05;
+            art.style.transform = "translate(" + px.toFixed(2) + "px," + py.toFixed(2) + "px)";
+          }
+          requestAnimationFrame(frame);
+        }
+        requestAnimationFrame(frame);
+      })();
+    </script>
+  </body>
+</html>
